@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+    <head>  
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.6">
+        <title>Rook FTF Values</title>
+        <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+        <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+        <link rel="shortcut icon" href="favicon/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+        <link rel="manifest" href="favicon/site.webmanifest" />
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-KPPTEKBT56"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-KPPTEKBT56');
+        </script> 
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: 400;
+            background-color: #0e0e0e;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px; /* Space between tables */
+            justify-content: center; /* Center align tables in the row */
+            padding: 20px;
+        }
+        table {
+            border-collapse: separate; /* Separate borders for clear visibility */
+            border-spacing: 0; /* No gaps between cells */
+            font-size: 12px;
+            flex: 1 1 calc(50% - 20px); /* Responsive width */
+            max-width: 300px; /* Optional: Restrict maximum table width */
+            min-width: 200px; /* Optional: Minimum table width */
+            box-sizing: border-box;
+            border: 2px solid #272727; /* Light grey border */
+            border-radius: 12px; /* Rounded corners */
+            overflow: hidden; /* Clip content to the rounded border */
+            background-color: transparent; /* Match the background color */
+            color: white; /* Text remains white for readability */
+        }
+        td {
+            text-align: left;
+            vertical-align: top;
+            padding: 10px;
+            background-color: transparent; /* No cell background color */
+        }
+        td img {
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px; /* Rounded corners for images */
+            box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.5); /* Stronger shadow on images */
+        }
+        .rank-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: #ffcc00; /* Gold color for visibility */
+            color: black;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+    </style>
+    </head>
+    <body style="font-family: 'Montserrat', sans-serif; font-weight: 400;background-color: #0e0e0e;color: #ffffff;">
+        <h1 style="text-align: center;">Rook's FTF Values</h1>
+        <h4 style="text-align: center;">| <a href="https://fleethefacilityvalues.github.io/UseGuide/" style="color:red;">Use Guide</a> | <a href="https://fleethefacilityvalues.github.io/PictureList/" style="color:#7fbfff;">Picture Lists</a> | <a href="https://fleethefacilityvalues.github.io/FAQ/" style="color: #9966cc;">FAQ</a> |</h4>
+        <h4 style="text-align: center;">| <a href="https://fleethefacilityvalues.github.io/Elusives/" style="color: #ffaa00;">Elusives</a> | <a href="https://fleethefacilityvalues.github.io/Legendaries/" style="color:yellow;">Legendaries</a> | <a href="https://fleethefacilityvalues.github.io/Epics/" style="color: #ff00ff;">Epics</a> | <a href="https://fleethefacilityvalues.github.io/Rares/" style="color: rgb(0, 255, 255);">Rares</a> | <a href="https://fleethefacilityvalues.github.io/Commons/" style="color: #00ff00;">Commons</a> |</h4>
+        <hr>
+        <h2 style="text-align: center;"><b><font size="7" color="#ffffff"><u>Party Balloons</font></u></b></h2>
+            <div class="container">
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <canvas id="valueChart" width="800" height="200"></canvas>
+                    <script>
+                      // --- 1) Example daily data
+                      const dailyData = [
+                        // Optionally uncomment an older data point to test carry-over:
+                        // { date: '2023-01-01', value: 11.5 },
+                        { date: '2025-01-01', value: 12.5 },
+                        { date: '2025-01-03', value: 13 },
+                        { date: '2025-01-05', value: 14 },
+                        { date: '2025-02-01', value: 15 },
+                        { date: '2025-02-03', value: 16 },
+                        { date: '2025-03-01', value: 17 },
+                        { date: '2025-03-05', value: 18 },
+                      ];
+                  
+                      // --- 2) Format date as "Month Day" using UTC
+                      function formatDate(date) {
+                        return new Date(date).toLocaleDateString('en-US', {
+                          timeZone: 'UTC',
+                          month: 'long',
+                          day: 'numeric'
+                        });
+                      }
+                  
+                      // --- 3) Sort data chronologically
+                      dailyData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                  
+                      // --- 4) Create a UTC "today" (without time) and determine cutoff (1 year ago)
+                      const now = new Date();
+                      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+                      const cutoffDate = new Date(todayUTC);
+                      cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+                  
+                      // --- 5) Find the last data point older than cutoff (if any)
+                      let lastOlderValue = null;
+                      for (const item of dailyData) {
+                        const itemDate = new Date(item.date);
+                        if (itemDate < cutoffDate) {
+                          lastOlderValue = item.value;
+                        } else {
+                          break;
+                        }
+                      }
+                  
+                      // --- 6) Filter data: keep only points on or after cutoffDate
+                      const filteredData = dailyData.filter(item => new Date(item.date) >= cutoffDate);
+                  
+                      // --- 7) Build labels and values day-by-day
+                      const labels = [];
+                      const values = [];
+                      let currentDate, previousValue;
+                      if (lastOlderValue !== null) {
+                        // Scenario A: Use carry-over from cutoffDate.
+                        currentDate = new Date(cutoffDate);
+                        previousValue = lastOlderValue;
+                      } else {
+                        // Scenario B: Start at the earliest filtered data point.
+                        currentDate = new Date(filteredData[0].date);
+                        previousValue = null;
+                      }
+                  
+                      filteredData.forEach(item => {
+                        const entryDate = new Date(item.date);
+                        // Fill in missing days until the data point.
+                        while (currentDate < entryDate) {
+                          labels.push(formatDate(currentDate));
+                          values.push(previousValue);
+                          currentDate.setDate(currentDate.getDate() + 1);
+                        }
+                        // Add the actual data point.
+                        labels.push(formatDate(entryDate));
+                        values.push(item.value);
+                        previousValue = item.value;
+                        currentDate.setDate(currentDate.getDate() + 1);
+                      });
+                  
+                      // --- 8) Extend the graph until todayUTC if not already included.
+                      if (labels[labels.length - 1] !== formatDate(todayUTC)) {
+                        while (currentDate <= todayUTC) {
+                          labels.push(formatDate(currentDate));
+                          values.push(previousValue);
+                          currentDate.setDate(currentDate.getDate() + 1);
+                        }
+                      }
+                  
+                      // --- 9) Calculate raw min and max
+                      let minValue = Math.min(...values);
+                      let maxValue = Math.max(...values);
+                      if (!isFinite(minValue)) minValue = 0;
+                      if (!isFinite(maxValue)) maxValue = 10;
+                  
+                      // --- 10) Adjust min and max to nearest half step not including a data value.
+                      let adjustedMin = Math.floor(minValue * 2) / 2;
+                      let adjustedMax = Math.ceil(maxValue * 2) / 2;
+                      if (adjustedMin === minValue) adjustedMin -= 0.5;
+                      if (adjustedMax === maxValue) adjustedMax += 0.5;
+                  
+                      // --- 11) Build the Chart.js configuration
+                      const data = {
+                        labels: labels,
+                        datasets: [{
+                          label: 'Value',
+                          data: values,
+                          borderColor: '#0000FF',       // Blue line
+                          backgroundColor: 'transparent', // No fill
+                          fill: false,
+                          tension: 0.1,
+                          pointRadius: 0               // Remove data point dots
+                        }]
+                      };
+                  
+                      const config = {
+                        type: 'line',
+                        data: data,
+                        options: {
+                          responsive: true,
+                          plugins: {
+                            legend: { position: 'top' },
+                            tooltip: {
+                              mode: 'index',
+                              intersect: false,
+                              callbacks: {
+                                title: function(tooltipItems) {
+                                  const idx = tooltipItems[0].dataIndex;
+                                  return data.labels[idx];
+                                }
+                              }
+                            }
+                          },
+                          scales: {
+                            x: {
+                              title: { display: true, text: 'Date' },
+                              ticks: {
+                                maxTicksLimit: 12,
+                                callback: (value, index) => labels[index]
+                              }
+                            },
+                            y: {
+                              title: { display: true, text: 'Value' },
+                              min: adjustedMin,
+                              max: adjustedMax
+                            }
+                          }
+                        }
+                      };
+                  
+                      // --- 12) Render the chart
+                      new Chart(document.getElementById('valueChart'), config);
+                    </script>
+                </html>
+                
+    </body>
+</html>
+
+
+
