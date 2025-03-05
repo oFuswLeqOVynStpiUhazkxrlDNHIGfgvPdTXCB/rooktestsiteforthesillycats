@@ -19,8 +19,8 @@
             gtag('config', 'G-KPPTEKBT56');
         </script> 
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body {
+        <style>
+          body {
             font-family: 'Montserrat', Arial, sans-serif;
             font-weight: 400;
             background-color: #0e0e0e;
@@ -29,27 +29,28 @@
             -moz-osx-font-smoothing: grayscale;
             text-align: center;
           }
-        /* Make the canvas fill its container responsively */
-        #chartContainer {
-          width: 100%;
-          max-width: 600px; /* Adjust as needed */
-          margin: 0 auto;
-          padding: 20px;
-        }
-        canvas {
-          width: 100% !important;
-          height: auto !important;
-        }
-        /* Media query for smaller screens: reduce font size and tick label density */
-        @media (max-width: 480px) {
-          body {
-            font-size: 14px;
-        }
-          .chartjs-render-monitor {
-            font-size: 12px;
-        }
-        }
-  </style>
+          /* Responsive container for the chart */
+          #chartContainer {
+            width: 100%;
+            max-width: 600px; /* You can adjust the max width as needed */
+            margin: 0 auto;
+            padding: 20px;
+            height: 300px; /* Base height for desktop/mobile */
+          }
+          canvas {
+            width: 100% !important;
+            height: 100% !important;
+          }
+          /* Increase height and adjust font sizes on smaller screens */
+          @media (max-width: 480px) {
+            #chartContainer {
+              height: 350px;  /* Increase height for mobile */
+            }
+            body {
+              font-size: 14px;
+            }
+          }
+        </style>
     </head>
     <body style="font-family: 'Montserrat', sans-serif; font-weight: 400;background-color: #0e0e0e;color: #ffffff;">
         <h1 style="text-align: center;">Rook's FTF Values</h1>
@@ -63,6 +64,8 @@
                     <script>
                       // Example daily data
                       const dailyData = [
+                        // Uncomment an older data point to test carry-over behavior:
+                        // { date: '2023-01-01', value: 11.5 },
                         { date: '2024-01-01', value: 12 },
                         { date: '2025-01-01', value: 12.5 },
                         { date: '2025-01-03', value: 13 },
@@ -72,6 +75,7 @@
                         { date: '2025-03-01', value: 17 }
                       ];
                   
+                      // Format date as "Month Day" using UTC
                       function formatDate(date) {
                         return new Date(date).toLocaleDateString('en-US', {
                           timeZone: 'UTC',
@@ -80,14 +84,16 @@
                         });
                       }
                   
-                      // Sort data
+                      // Sort data chronologically
                       dailyData.sort((a, b) => new Date(a.date) - new Date(b.date));
                   
-                      const today = new Date();
-                      const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+                      // Create a UTC "today" (without time) and determine cutoff (1 year ago)
+                      const now = new Date();
+                      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
                       const cutoffDate = new Date(todayUTC);
                       cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
                   
+                      // Find the last data point older than cutoff (if any)
                       let lastOlderValue = null;
                       for (const item of dailyData) {
                         const itemDate = new Date(item.date);
@@ -98,33 +104,39 @@
                         }
                       }
                   
+                      // Filter data: keep only points on or after cutoffDate
                       const filteredData = dailyData.filter(item => new Date(item.date) >= cutoffDate);
                   
+                      // Build labels and values day-by-day
                       const labels = [];
                       const values = [];
                       let currentDate, previousValue;
                       if (lastOlderValue !== null) {
+                        // Scenario A: Use carry-over from cutoffDate.
                         currentDate = new Date(cutoffDate);
                         previousValue = lastOlderValue;
                       } else {
+                        // Scenario B: Start at the earliest filtered data point.
                         currentDate = new Date(filteredData[0].date);
                         previousValue = null;
                       }
                   
                       filteredData.forEach(item => {
                         const entryDate = new Date(item.date);
+                        // Fill in missing days up to the data point.
                         while (currentDate < entryDate) {
                           labels.push(formatDate(currentDate));
                           values.push(previousValue);
                           currentDate.setDate(currentDate.getDate() + 1);
                         }
+                        // Add the actual data point.
                         labels.push(formatDate(entryDate));
                         values.push(item.value);
                         previousValue = item.value;
                         currentDate.setDate(currentDate.getDate() + 1);
                       });
                   
-                      // Extend until todayUTC if needed
+                      // Extend the graph until todayUTC if needed.
                       if (labels[labels.length - 1] !== formatDate(todayUTC)) {
                         while (currentDate <= todayUTC) {
                           labels.push(formatDate(currentDate));
@@ -133,16 +145,19 @@
                         }
                       }
                   
+                      // Calculate raw min and max from values.
                       let rawMin = Math.min(...values);
                       let rawMax = Math.max(...values);
                       if (!isFinite(rawMin)) rawMin = 0;
                       if (!isFinite(rawMax)) rawMax = 10;
                   
+                      // Adjust y-axis limits to the nearest half step that does not include a data value.
                       let adjustedMin = Math.floor(rawMin * 2) / 2;
                       let adjustedMax = Math.ceil(rawMax * 2) / 2;
                       if (adjustedMin === rawMin) adjustedMin -= 0.5;
                       if (adjustedMax === rawMax) adjustedMax += 0.5;
                   
+                      // Build the Chart.js configuration.
                       const data = {
                         labels: labels,
                         datasets: [{
@@ -178,7 +193,7 @@
                             x: {
                               title: { display: true, text: 'Date' },
                               ticks: {
-                                maxTicksLimit: 6,  // Fewer ticks on mobile screens
+                                maxTicksLimit: 6, // Fewer ticks on mobile.
                                 callback: (value, index) => labels[index]
                               }
                             },
