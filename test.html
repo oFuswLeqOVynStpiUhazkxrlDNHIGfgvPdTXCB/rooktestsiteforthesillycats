@@ -1,22 +1,12 @@
 <!DOCTYPE html>
 <html>
-  <head>  
+  <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Use initial-scale=1 for better scaling -->
+    <!-- Use a standard meta viewport without altering initial-scale -->
+    <meta name="viewport" content="width=device-width, initial-scale=0.6">
     <title>Rook FTF Values</title>
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
-    <link rel="shortcut icon" href="favicon/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
-    <link rel="manifest" href="favicon/site.webmanifest" />
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KPPTEKBT56"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-KPPTEKBT56');
-    </script> 
+    <!-- Other favicon and font links here -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
       body {
@@ -24,29 +14,28 @@
         font-weight: 400;
         background-color: #0e0e0e;
         color: #ffffff;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
         text-align: center;
         margin: 0;
         padding: 0;
       }
-      /* Use a dedicated container for the chart */
+      /* Responsive container using relative units */
       #chartContainer {
-        width: 100%;
+        width: 90%;
         max-width: 600px;
         margin: 0 auto;
         padding: 20px;
-        height: 300px; /* Base height for desktop */
+        height: 300px; /* Base height */
+        box-sizing: border-box;
       }
-      /* Let the canvas fill its container */
+      /* Let canvas fill container */
       canvas {
         width: 100% !important;
         height: 100% !important;
       }
-      /* On mobile, increase the container height for more vertical space */
+      /* Media query for mobile: adjust container height and font sizes */
       @media (max-width: 480px) {
         #chartContainer {
-          height: 400px;  /* Increase height on mobile */
+          height: 400px;  /* Increase vertical space */
         }
         body {
           font-size: 14px;
@@ -54,13 +43,12 @@
       }
     </style>
   </head>
-  <body style="font-family: 'Montserrat', sans-serif; font-weight: 400; background-color: #0e0e0e; color: #ffffff;">
-    <h1 style="text-align: center;">Rook's FTF Values</h1>
+  <body>
+    <h1>Rook's FTF Values</h1>
     <h4 style="text-align: center;">| <a href="https://fleethefacilityvalues.github.io/UseGuide/" style="color:red;">Use Guide</a> | <a href="https://fleethefacilityvalues.github.io/PictureList/" style="color:#7fbfff;">Picture Lists</a> | <a href="https://fleethefacilityvalues.github.io/FAQ/" style="color: #9966cc;">FAQ</a> |</h4>
     <h4 style="text-align: center;">| <a href="https://fleethefacilityvalues.github.io/Elusives/" style="color: #ffaa00;">Elusives</a> | <a href="https://fleethefacilityvalues.github.io/Legendaries/" style="color:yellow;">Legendaries</a> | <a href="https://fleethefacilityvalues.github.io/Epics/" style="color: #ff00ff;">Epics</a> | <a href="https://fleethefacilityvalues.github.io/Rares/" style="color: rgb(0, 255, 255);">Rares</a> | <a href="https://fleethefacilityvalues.github.io/Commons/" style="color: #00ff00;">Commons</a> |</h4>
     <hr>
-    <h2 style="text-align: center;"><b><font size="7" color="#ffffff"><u>Party Balloons</u></font></b></h2>
-    <!-- Use the ID "chartContainer" for proper styling -->
+    <h2 style="text-align: center;"><b><font size="7" color="#ffffff"><u>Commons</font></u></b></h2>
     <div id="chartContainer">
       <canvas id="valueChart"></canvas>
     </div>
@@ -84,7 +72,6 @@
         });
       }
   
-      // Sort data chronologically
       dailyData.sort((a, b) => new Date(a.date) - new Date(b.date));
   
       const now = new Date();
@@ -92,7 +79,6 @@
       const cutoffDate = new Date(todayUTC);
       cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
   
-      // Find the last data point older than cutoff (if any)
       let lastOlderValue = null;
       for (const item of dailyData) {
         const itemDate = new Date(item.date);
@@ -103,10 +89,8 @@
         }
       }
   
-      // Filter data: keep only points on or after cutoffDate
       const filteredData = dailyData.filter(item => new Date(item.date) >= cutoffDate);
   
-      // Build labels and values day-by-day
       const labels = [];
       const values = [];
       let currentDate, previousValue;
@@ -120,20 +104,17 @@
   
       filteredData.forEach(item => {
         const entryDate = new Date(item.date);
-        // Fill in missing days up to the data point.
         while (currentDate < entryDate) {
           labels.push(formatDate(currentDate));
           values.push(previousValue);
           currentDate.setDate(currentDate.getDate() + 1);
         }
-        // Add the actual data point.
         labels.push(formatDate(entryDate));
         values.push(item.value);
         previousValue = item.value;
         currentDate.setDate(currentDate.getDate() + 1);
       });
   
-      // Extend the graph until todayUTC if needed.
       if (labels[labels.length - 1] !== formatDate(todayUTC)) {
         while (currentDate <= todayUTC) {
           labels.push(formatDate(currentDate));
@@ -142,13 +123,11 @@
         }
       }
   
-      // Calculate raw min and max from values.
       let rawMin = Math.min(...values);
       let rawMax = Math.max(...values);
       if (!isFinite(rawMin)) rawMin = 0;
       if (!isFinite(rawMax)) rawMax = 10;
   
-      // Adjust y-axis limits to the nearest half step that does not include a data value.
       let adjustedMin = Math.floor(rawMin * 2) / 2;
       let adjustedMax = Math.ceil(rawMax * 2) / 2;
       if (adjustedMin === rawMin) adjustedMin -= 0.5;
